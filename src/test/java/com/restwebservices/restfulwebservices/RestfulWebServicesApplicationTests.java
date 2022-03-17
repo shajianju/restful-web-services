@@ -5,7 +5,10 @@ import static org.junit.Assert.assertNotNull;
 
 import java.util.ArrayList;
 
+import org.junit.jupiter.api.MethodOrderer.OrderAnnotation;
+import org.junit.jupiter.api.Order;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.TestMethodOrder;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -19,6 +22,7 @@ import com.restwebservices.restfulwebservices.repository.EmployeeRepo;
 
 @SpringBootTest
 @RunWith(SpringRunner.class)
+@TestMethodOrder(OrderAnnotation.class)
 class RestfulWebServicesApplicationTests {
 	
 	@Autowired
@@ -29,6 +33,7 @@ class RestfulWebServicesApplicationTests {
 
 
 	@Test
+	@Order(1)
 	public void testCreate() {
 		
 		Account acc=new Account();
@@ -40,6 +45,7 @@ class RestfulWebServicesApplicationTests {
 	}
 	
 	@Test
+	@Order(2)
 	public void testAddNewUser() {
 		
 		Employee employee=new Employee("AKHIL", "31/12/1995");
@@ -52,6 +58,7 @@ class RestfulWebServicesApplicationTests {
 	
 	
 	@Test
+	@Order(3)
 	public void testListAll() {
 		assertThat(accountRepo.findAll()).size().isGreaterThan(0);
 		

@@ -12,33 +12,64 @@ import org.springframework.core.env.Environment;
 import org.springframework.hateoas.EntityModel;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.restwebservices.restfulwebservices.beans.ResponseData;
 import com.restwebservices.restfulwebservices.exception.AccountNotFoundException;
 import com.restwebservices.restfulwebservices.exception.EmployCustomException;
 import com.restwebservices.restfulwebservices.exception.ExceptionBody;
+import com.restwebservices.restfulwebservices.jwt.AuthenticationRequest;
+import com.restwebservices.restfulwebservices.jwt.AuthenticationResponse;
+import com.restwebservices.restfulwebservices.jwt.JwtUtil;
 import com.restwebservices.restfulwebservices.models.Account;
 import com.restwebservices.restfulwebservices.models.Employee;
+import com.restwebservices.restfulwebservices.securiy.MyUserDetailService;
 import com.restwebservices.restfulwebservices.serviceImpl.AccountServiceImpl;
 import com.restwebservices.restfulwebservices.serviceImpl.EmployeeServiceImpl;
+
+import io.jsonwebtoken.Jwts;
 
 @RestController
 public class EmployeeController {
 
 	@Autowired
 	EmployeeServiceImpl employeeServiceImpl;
-	
+
 	@Autowired
 	AccountServiceImpl accountServiceImpl;
-	
+
 	@Autowired
 	Environment environment;
 
-	@PostMapping("/emp/addUser")
+
+	@Autowired
+	AuthenticationManager authenticationManager;
+
+	@Autowired
+	private MyUserDetailService userDetailService;
+
+	@Autowired
+	private JwtUtil jwtutil;
+
+	@PostMapping(value = "/authenticate")
+	public ResponseEntity<?> createAuthToken(@RequestBody AuthenticationRequest req){
+
+		authenticationManager.authenticate(new UsernamePasswordAuthenticationToken(req.getUsername(), req.getPassword()));
+
+		final UserDetails details=userDetailService.loadUserByUsername(req.getUsername());
+		final String twt=jwtutil.generateToken(details);
+		return ResponseEntity.ok(new AuthenticationResponse(twt));
+	}
+
+
 	public EntityModel<ResponseData> addNewUser(@Valid @RequestBody Employee bean){
 
 		ResponseData responseData=new ResponseData();
@@ -52,7 +83,7 @@ public class EmployeeController {
 			 * format=DateFormatter.ofPattern("YYYY-mm-dd"); LocalDate
 			 * date=LocalDate.parse(bean.getBirthDate(),format);
 			 */
-			
+
 			/*
 			 * DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd-MM-yyyy");
 			 * LocalDate date = LocalDate.parse(bean.getBirthdate(), formatter); Employee
@@ -114,7 +145,7 @@ public class EmployeeController {
 		return new ResponseEntity(responseBody, HttpStatus.ALREADY_REPORTED);
 
 	}
-	
+
 	@PostMapping("/emp/addAccount")
 	public EntityModel<ResponseData> addAccount( @RequestBody Account bean){
 
@@ -155,7 +186,7 @@ public class EmployeeController {
 		return new ResponseEntity(responseBody, HttpStatus.ALREADY_REPORTED);
 
 	}
-	
+
 
 
 }
